@@ -230,6 +230,19 @@ app.get('/api/history', (req, res) => {
     res.json(indexer.history);
 });
 
+// API: Check URL Status (Google Indexing API)
+app.get('/api/status', async (req, res) => {
+    const { url } = req.query;
+    if (!url) return res.status(400).json({ error: 'URL required' });
+
+    try {
+        const data = await indexer.getUrlStatus(url);
+        res.json({ success: true, data });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
 // --- MAIN ROUTES ---
 // Root route - Protected Dashboard
 app.get('/', (req, res) => {

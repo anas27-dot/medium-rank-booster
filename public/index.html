@@ -298,6 +298,7 @@
         <div class="tab active" onclick="switchTab('medium')">Medium Booster</div>
         <div class="tab" onclick="switchTab('auto')">Auto-Pilot</div>
         <div class="tab" onclick="switchTab('standard')">Standard URL Indexer</div>
+        <div class="tab" onclick="switchTab('status')">🔍 Check Status</div>
         <div class="tab" onclick="switchTab('visits')">🕷️ Bot Visits</div>
         <div class="tab" onclick="switchTab('history')">History</div>
     </div>
@@ -345,6 +346,24 @@
                 <div style="padding: 1rem; color: var(--secondary); font-size: 0.9rem;">Loading...</div>
             </div>
         </div>
+    </div>
+
+    <!-- Status Checker Panel -->
+    <div id="status" class="panel">
+        <div class="medium-tip" style="background: #fdf4ff; border-color: #f0abfc; color: #86198f;">
+            <div style="font-size: 1.5rem;">🔍</div>
+            <div>
+                <strong>Indexing Status Checker</strong>
+                Ask Google directly if they received your URL. Note: This only checks <em>submission</em> status, not if it's visible in search results.
+            </div>
+        </div>
+        <div class="input-group">
+            <input type="text" id="check-url" placeholder="Paste URL (e.g., your Bridge Page URL)..." style="width: 100%; padding: 1rem; border-radius: 12px; border: 1px solid var(--border);">
+        </div>
+        <button onclick="checkUrlStatus()" style="background: #9333ea;">
+            Check Google Status
+        </button>
+        <div id="status-result" style="margin-top: 1rem;"></div>
     </div>
 
     <!-- Bot Visits Panel -->
@@ -397,6 +416,38 @@
         if(tabName === 'history') loadHistory();
         if(tabName === 'auto') loadFeeds();
         if(tabName === 'visits') loadVisits();
+    }
+
+    async function checkUrlStatus() {
+        const url = document.getElementById('check-url').value;
+        if (!url) return alert('URL required');
+        
+        const resDiv = document.getElementById('status-result');
+        resDiv.innerHTML = '<div style="padding: 1rem; text-align: center;">Asking Google... ⏳</div>';
+        
+        try {
+            const res = await fetch(`${API_URL}/status?url=${encodeURIComponent(url)}`);
+            const data = await res.json();
+            
+            if (data.success) {
+                const meta = data.data;
+                resDiv.innerHTML = `
+                    <div class="result-box" style="text-align: left; font-family: monospace;">
+                        <div style="color: #166534; font-weight: bold; margin-bottom: 0.5rem;">✅ Google Knows This URL</div>
+                        <div><strong>Latest Update:</strong> ${meta.latestUpdate ? new Date(meta.latestUpdate.notifyTime).toLocaleString() : 'Never'}</div>
+                        <div><strong>Type:</strong> ${meta.latestUpdate ? meta.latestUpdate.type : 'N/A'}</div>
+                        <div style="margin-top: 0.5rem; color: #64748b; font-size: 0.85rem;">(This means the API request was received successfully)</div>
+                    </div>
+                `;
+            } else {
+                resDiv.innerHTML = `<div class="result-box" style="background: #fee2e2; border-color: #fecaca; color: #991b1b;">
+                    ❌ Not Found / Error<br>
+                    <small>${data.error}</small>
+                </div>`;
+            }
+        } catch (e) {
+            resDiv.innerHTML = 'Error: ' + e.message;
+        }
     }
 
     async function loadVisits() {

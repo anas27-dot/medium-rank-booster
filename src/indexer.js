@@ -174,6 +174,24 @@ class Indexer extends EventEmitter {
         return result;
     }
 
+    async getUrlStatus(url) {
+        const googleClient = await this.getGoogleClient();
+        if (!googleClient) {
+            throw new Error('No Google Client available');
+        }
+
+        try {
+            const res = await googleClient.request({
+                url: `https://indexing.googleapis.com/v3/urlNotifications/metadata?url=${encodeURIComponent(url)}`,
+                method: 'GET'
+            });
+            return res.data;
+        } catch (e) {
+            console.error('Status Check Error:', e.message);
+            throw e;
+        }
+    }
+
     // --- MEDIUM BOOSTER & YOUTUBE STRATEGY ---
     // Generates a local HTML page linking to the Medium articles and YouTube videos
     // Submits THIS local page to Google/Bing (since user owns this domain)
