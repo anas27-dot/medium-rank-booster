@@ -353,17 +353,19 @@
         <div class="medium-tip" style="background: #fdf4ff; border-color: #f0abfc; color: #86198f;">
             <div style="font-size: 1.5rem;">🔍</div>
             <div>
-                <strong>Indexing Status Checker</strong>
-                Ask Google directly if they received your URL. Note: This only checks <em>submission</em> status, not if it's visible in search results.
+                <strong>Live Indexing Status</strong>
+                Below are your recently submitted URLs. Click "Check" to see if Google has received them.
+                <br><small>Note: We can only check status for URLs on <em>this</em> domain (Bridge Pages), not external Medium links.</small>
             </div>
         </div>
-        <div class="input-group">
-            <input type="text" id="check-url" placeholder="Paste URL (e.g., your Bridge Page URL)..." style="width: 100%; padding: 1rem; border-radius: 12px; border: 1px solid var(--border);">
+
+        <div id="status-loading" style="display: none; text-align: center; color: var(--secondary); padding: 2rem;">
+            Loading history...
         </div>
-        <button onclick="checkUrlStatus()" style="background: #9333ea;">
-            Check Google Status
-        </button>
-        <div id="status-result" style="margin-top: 1rem;"></div>
+
+        <div id="status-list" class="history-list">
+            <!-- Populated via JS -->
+        </div>
     </div>
 
     <!-- Bot Visits Panel -->
@@ -416,38 +418,97 @@
         if(tabName === 'history') loadHistory();
         if(tabName === 'auto') loadFeeds();
         if(tabName === 'visits') loadVisits();
+        if(tabName === 'status') loadStatusDashboard();
     }
 
-    async function checkUrlStatus() {
-        const url = document.getElementById('check-url').value;
-        if (!url) return alert('URL required');
+    async function loadStatusDashboard() {
+        const list = document.getElementById('status-list');
+        const loading = document.getElementById('status-loading');
         
-        const resDiv = document.getElementById('status-result');
-        resDiv.innerHTML = '<div style="padding: 1rem; text-align: center;">Asking Google... ⏳</div>';
-        
+        list.innerHTML = '';
+        loading.style.display = 'block';
+
+        try {
+            const res = await fetch(`${API_URL}/history`);
+            const data = await res.json();
+            loading.style.display = 'none';
+
+            // Filter unique URLs to avoid duplicates
+            const uniqueUrls = [...new Set(data.map(item => item.url))];
+
+            if (uniqueUrls.length === 0) {
+                list.innerHTML = '<div style="padding: 2rem; text-align: center; color: var(--secondary);">No URLs submitted yet.</div>';
+                return;
+            }
+
+            list.innerHTML = uniqueUrls.slice(0, 10).map((url, index) => `
+                <div class="history-item" id="status-row-${index}">
+                    <div style="flex-grow: 1;">
+                        <div class="url-text" style="word-break: break-all;">${url}</div>
+                        <div class="status-detail" style="font-size: 0.85rem; color: var(--secondary); margin-top: 0.25rem;">
+                            Waiting to check...
+                        </div>
+                    </div>
+                    <button onclick="checkSingleStatus('${url}', ${index})" style="width: auto; padding: 0.5rem 1rem; font-size: 0.85rem; background: #9333ea;">
+                        Check Now
+                    </button>
+                </div>
+            `).join('');
+
+            // Auto-check the first one if it's the bridge page
+            if (uniqueUrls[0].includes('medium-bridge')) {
+                checkSingleStatus(uniqueUrls[0], 0);
+            }
+
+        } catch (e) {
+            loading.style.display = 'none';
+            list.innerHTML = '<div style="color: red;">Failed to load history.</div>';
+        }
+    }
+
+    async function checkSingleStatus(url, index) {
+        const row = document.getElementById(`status-row-${index}`);
+        const statusDiv = row.querySelector('.status-detail');
+        const btn = row.querySelector('button');
+
+        statusDiv.innerHTML = '<span class="spin">⏳</span> Asking Google...';
+        btn.disabled = true;
+        btn.style.opacity = '0.7';
+
         try {
             const res = await fetch(`${API_URL}/status?url=${encodeURIComponent(url)}`);
             const data = await res.json();
-            
+
             if (data.success) {
                 const meta = data.data;
-                resDiv.innerHTML = `
-                    <div class="result-box" style="text-align: left; font-family: monospace;">
-                        <div style="color: #166534; font-weight: bold; margin-bottom: 0.5rem;">✅ Google Knows This URL</div>
-                        <div><strong>Latest Update:</strong> ${meta.latestUpdate ? new Date(meta.latestUpdate.notifyTime).toLocaleString() : 'Never'}</div>
-                        <div><strong>Type:</strong> ${meta.latestUpdate ? meta.latestUpdate.type : 'N/A'}</div>
-                        <div style="margin-top: 0.5rem; color: #64748b; font-size: 0.85rem;">(This means the API request was received successfully)</div>
-                    </div>
+                const time = meta.latestUpdate ? new Date(meta.latestUpdate.notifyTime).toLocaleString() : 'Never';
+                const type = meta.latestUpdate ? meta.latestUpdate.type : 'N/A';
+                
+                statusDiv.innerHTML = `
+                    <span style="color: #166534; font-weight: 600;">✅ Indexed / Received</span> • 
+                    Update: ${time} • Type: ${type}
                 `;
+                row.style.borderColor = '#bbf7d0';
+                row.style.background = '#f0fdf4';
             } else {
-                resDiv.innerHTML = `<div class="result-box" style="background: #fee2e2; border-color: #fecaca; color: #991b1b;">
-                    ❌ Not Found / Error<br>
-                    <small>${data.error}</small>
-                </div>`;
+                 statusDiv.innerHTML = `
+                    <span style="color: #be123c; font-weight: 600;">❌ Not Found</span> • 
+                    ${data.error || 'Google has no record yet'}
+                `;
+                row.style.borderColor = '#fecaca';
+                row.style.background = '#fef2f2';
             }
         } catch (e) {
-            resDiv.innerHTML = 'Error: ' + e.message;
+            statusDiv.innerText = 'Error checking status';
+        } finally {
+            btn.disabled = false;
+            btn.style.opacity = '1';
+            btn.innerText = 'Check Again';
         }
+    }
+
+    async function checkUrlStatus() {
+        // Deprecated - kept for reference if needed
     }
 
     async function loadVisits() {
