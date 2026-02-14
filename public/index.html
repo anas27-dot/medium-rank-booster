@@ -433,8 +433,15 @@
             const data = await res.json();
             loading.style.display = 'none';
 
-            // Filter unique URLs to avoid duplicates
-            const uniqueUrls = [...new Set(data.map(item => item.url))];
+            // 1. Get History URLs
+            let uniqueUrls = [...new Set(data.map(item => item.url))];
+
+            // 2. ALWAYS Add the Bridge Page URL (Auto-calculated)
+            // This ensures the user has something to check even if history is wiped on restart
+            const bridgeUrl = window.location.origin + '/medium-bridge.html';
+            if (!uniqueUrls.includes(bridgeUrl)) {
+                uniqueUrls.unshift(bridgeUrl);
+            }
 
             if (uniqueUrls.length === 0) {
                 list.innerHTML = '<div style="padding: 2rem; text-align: center; color: var(--secondary);">No URLs submitted yet.</div>';
@@ -446,7 +453,7 @@
                     <div style="flex-grow: 1;">
                         <div class="url-text" style="word-break: break-all;">${url}</div>
                         <div class="status-detail" style="font-size: 0.85rem; color: var(--secondary); margin-top: 0.25rem;">
-                            Waiting to check...
+                            ${url.includes('medium-bridge') ? '⭐ Main Bridge Page' : 'Waiting to check...'}
                         </div>
                     </div>
                     <button onclick="checkSingleStatus('${url}', ${index})" style="width: auto; padding: 0.5rem 1rem; font-size: 0.85rem; background: #9333ea;">
@@ -455,10 +462,8 @@
                 </div>
             `).join('');
 
-            // Auto-check the first one if it's the bridge page
-            if (uniqueUrls[0].includes('medium-bridge')) {
-                checkSingleStatus(uniqueUrls[0], 0);
-            }
+            // Auto-check the first one (usually the bridge page)
+            checkSingleStatus(uniqueUrls[0], 0);
 
         } catch (e) {
             loading.style.display = 'none';
