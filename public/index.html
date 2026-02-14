@@ -315,7 +315,7 @@
         <div class="input-group">
             <textarea id="medium-urls" placeholder="Paste your Medium Article URLs here (one per line)..."></textarea>
         </div>
-        <button onclick="boostMedium()">
+        <button id="boost-btn" onclick="boostMedium()">
             ⚡ Generate Bridge Page & Boost Rank
         </button>
         <div id="medium-result"></div>
@@ -491,14 +491,17 @@
             return;
         }
 
-        const btn = document.querySelector('#medium button');
+        // Use direct ID selector
+        const btn = document.getElementById('boost-btn');
         const resultDiv = document.getElementById('medium-result');
         
         // Save original text
-        const originalBtnText = btn.innerText;
+        const originalBtnText = btn ? btn.innerText : '⚡ Generate Bridge Page & Boost Rank';
 
-        btn.disabled = true;
-        btn.innerHTML = '<span class="spin">⚡</span> Generating Bridge Page...';
+        if (btn) {
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spin">⚡</span> Generating Bridge Page...';
+        }
         resultDiv.innerHTML = '';
 
         try {
@@ -534,8 +537,10 @@
             console.error('Fetch error:', e);
             resultDiv.innerHTML = `<div class="result-box" style="background: #fee2e2; border-color: #fecaca; color: #991b1b;">Network Error: ${e.message}</div>`;
         } finally {
-            btn.disabled = false;
-            btn.innerHTML = originalBtnText;
+            if (btn) {
+                btn.disabled = false;
+                btn.innerHTML = originalBtnText;
+            }
         }
     }
 

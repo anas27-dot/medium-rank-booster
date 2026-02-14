@@ -9,7 +9,8 @@ class Indexer extends EventEmitter {
     constructor(config = {}) {
         super();
         this.config = {
-            siteUrl: process.env.SITE_URL || 'http://localhost:3000',
+            // Prioritize Render URL, then Env Var, then Localhost
+            siteUrl: process.env.RENDER_EXTERNAL_URL || process.env.SITE_URL || 'http://localhost:3000',
             googleKeyFile: process.env.GOOGLE_KEY_FILE || 'service_account.json',
             bingApiKey: process.env.BING_API_KEY,
             ...config
