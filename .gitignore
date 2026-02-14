@@ -1,0 +1,7 @@
+node_modules/
+.env
+.env.local
+service_account.json
+data/
+public/medium-bridge.html
+public/sitemap.xml

@@ -1,0 +1,563 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="google-site-verification" content="BdcvLEb3SyOkHS6rbBdgd3-ysy0LsbLqWt7-WcDzFjg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Medium Rank Booster & URL Indexer v3.1</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-page: #f8fafc;
+            --bg-card: #ffffff;
+            --primary: #0f172a;
+            --secondary: #64748b;
+            --accent: #10b981; /* Emerald 500 */
+            --accent-hover: #059669;
+            --border: #e2e8f0;
+            --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+            --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+            --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+        }
+        
+        * { box-sizing: border-box; }
+
+        body {
+            background-color: var(--bg-page);
+            color: var(--primary);
+            font-family: 'Inter', system-ui, sans-serif;
+            margin: 0;
+            padding: 2rem;
+            min-height: 100vh;
+            line-height: 1.5;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 3rem;
+            padding-top: 2rem;
+        }
+
+        h1 {
+            font-size: 2.25rem;
+            font-weight: 800;
+            margin: 0;
+            color: var(--primary);
+            letter-spacing: -0.025em;
+            background: linear-gradient(135deg, #0f172a 0%, #334155 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .subtitle {
+            color: var(--secondary);
+            font-size: 1.125rem;
+            margin-top: 0.75rem;
+            font-weight: 500;
+        }
+        
+        /* Tabs */
+        .tabs {
+            display: flex;
+            justify-content: center;
+            gap: 0.5rem;
+            margin-bottom: 2.5rem;
+            background: #fff;
+            padding: 0.5rem;
+            border-radius: 999px;
+            box-shadow: var(--shadow-sm);
+            width: fit-content;
+            margin-left: auto;
+            margin-right: auto;
+            border: 1px solid var(--border);
+        }
+
+        .tab {
+            padding: 0.75rem 1.5rem;
+            cursor: pointer;
+            border-radius: 999px;
+            color: var(--secondary);
+            font-weight: 600;
+            font-size: 0.95rem;
+            transition: all 0.2s ease;
+        }
+
+        .tab:hover {
+            color: var(--primary);
+            background: #f1f5f9;
+        }
+
+        .tab.active {
+            background-color: var(--primary);
+            color: white;
+            box-shadow: var(--shadow-md);
+        }
+
+        /* Content Area */
+        .panel {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 2.5rem;
+            box-shadow: var(--shadow-lg);
+            display: none;
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .panel.active {
+            display: block;
+        }
+
+        /* Forms */
+        .input-group {
+            margin-bottom: 1.5rem;
+        }
+
+        textarea {
+            width: 100%;
+            height: 240px;
+            background: #fff;
+            border: 1px solid var(--border);
+            color: var(--primary);
+            padding: 1rem;
+            border-radius: 12px;
+            font-family: 'Menlo', 'Monaco', 'Courier New', monospace;
+            font-size: 0.9rem;
+            resize: vertical;
+            transition: all 0.2s;
+            line-height: 1.6;
+        }
+
+        textarea:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+        }
+        
+        textarea::placeholder {
+            color: #cbd5e1;
+        }
+        
+        button {
+            background: var(--primary);
+            color: #fff;
+            border: none;
+            padding: 1rem 2rem;
+            border-radius: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            width: 100%;
+            font-size: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            box-shadow: var(--shadow-md);
+        }
+
+        button:hover {
+            background: #1e293b;
+            transform: translateY(-1px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        button:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+        }
+
+        /* History List */
+        .history-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .history-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1.25rem;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            background: #fff;
+            transition: all 0.2s;
+        }
+
+        .history-item:hover {
+            border-color: #cbd5e1;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .url-text {
+            font-weight: 600;
+            color: var(--primary);
+            margin-bottom: 0.25rem;
+            font-size: 0.95rem;
+        }
+
+        .timestamp {
+            font-size: 0.85rem;
+            color: var(--secondary);
+        }
+
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.25rem 0.75rem;
+            border-radius: 999px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            margin-left: 0.5rem;
+            text-transform: uppercase;
+            letter-spacing: 0.025em;
+        }
+
+        .status-success { 
+            background: #dcfce7; 
+            color: #166534; 
+            border: 1px solid #bbf7d0;
+        }
+
+        .status-error { 
+            background: #fee2e2; 
+            color: #991b1b; 
+            border: 1px solid #fecaca;
+        }
+
+        /* Medium Specific */
+        .medium-tip {
+            background: #f0fdf4;
+            border: 1px solid #bbf7d0;
+            border-radius: 12px;
+            padding: 1.25rem;
+            margin-bottom: 1.5rem;
+            font-size: 0.95rem;
+            color: #166534;
+            display: flex;
+            gap: 1rem;
+            align-items: flex-start;
+        }
+
+        .medium-tip strong {
+            color: #15803d;
+            display: block;
+            margin-bottom: 0.25rem;
+        }
+        
+        /* Result Box */
+        .result-box {
+            margin-top: 1.5rem;
+            padding: 1.5rem;
+            border-radius: 12px;
+            background: #f8fafc;
+            border: 1px solid var(--border);
+            text-align: center;
+            animation: fadeIn 0.3s;
+        }
+
+        .result-link {
+            color: var(--primary);
+            text-decoration: none;
+            border-bottom: 1px solid var(--border);
+            transition: border-color 0.2s;
+        }
+        
+        .result-link:hover {
+            border-color: var(--primary);
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <h1>Medium Rank Booster</h1>
+        <div class="subtitle">Mission Control for SEO & Indexing</div>
+    </header>
+
+    <div class="tabs">
+        <div class="tab active" onclick="switchTab('medium')">Medium Booster</div>
+        <div class="tab" onclick="switchTab('auto')">Auto-Pilot</div>
+        <div class="tab" onclick="switchTab('standard')">Standard URL Indexer</div>
+        <div class="tab" onclick="switchTab('visits')">🕷️ Bot Visits</div>
+        <div class="tab" onclick="switchTab('history')">History</div>
+    </div>
+
+    <!-- Medium Panel -->
+    <div id="medium" class="panel active">
+        <!-- ... -->
+    </div>
+
+    <!-- Bot Visits Panel -->
+    <div id="visits" class="panel">
+        <div class="medium-tip" style="background: #fdf2f8; border-color: #fca5a5; color: #be123c;">
+            <div style="font-size: 1.5rem;">🚨</div>
+            <div>
+                <strong>Googlebot Watch</strong>
+                Real-time log of when Googlebot crawls your site.
+            </div>
+        </div>
+        <button onclick="loadVisits()" style="margin-bottom: 1rem; background: #be123c;">Refresh Logs</button>
+        <div id="visits-list">Loading...</div>
+    </div>
+
+    <!-- Auto-Pilot Panel -->
+        <!-- ... existing medium content ... -->
+    </div>
+
+    <!-- Auto-Pilot Panel -->
+    <div id="auto" class="panel">
+        <div class="medium-tip" style="background: #f0f9ff; border-color: #bae6fd; color: #0369a1;">
+            <div style="font-size: 1.5rem;">🤖</div>
+            <div>
+                <strong>Set & Forget</strong>
+                Paste your Medium RSS Feed URL (e.g., https://medium.com/feed/@yourname). 
+                We will check it every hour and auto-boost new articles!
+            </div>
+        </div>
+        <div class="input-group">
+            <input type="text" id="feed-url" placeholder="https://medium.com/feed/@username" style="width: 100%; padding: 1rem; border-radius: 12px; border: 1px solid var(--border);">
+        </div>
+        <button onclick="addFeed()" style="background: #0ea5e9;">
+            Start Auto-Pilot
+        </button>
+        <div id="auto-result" style="margin-top: 1rem;"></div>
+        
+        <div style="margin-top: 2rem;">
+            <h3 style="font-size: 1.1rem; color: var(--primary);">Currently Monitoring:</h3>
+            <div id="feed-list" style="background: #fff; border: 1px solid var(--border); border-radius: 8px; overflow: hidden;">
+                <div style="padding: 1rem; color: var(--secondary); font-size: 0.9rem;">Loading...</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Standard Panel -->
+        <div class="medium-tip">
+            <div style="font-size: 1.5rem;">🚀</div>
+            <div>
+                <strong>How this works</strong>
+                Since you don't own medium.com, you can't submit individual article URLs directly to Google Indexing API. 
+                This tool creates a high-authority "Bridge Page" on <em>your</em> domain listing all your articles, then submits that Bridge Page to Google/Bing.
+            </div>
+        </div>
+        <div class="input-group">
+            <textarea id="medium-urls" placeholder="Paste your Medium Article URLs here (one per line)..."></textarea>
+        </div>
+        <button onclick="boostMedium()">
+            ⚡ Generate Bridge Page & Boost Rank
+        </button>
+        <div id="medium-result"></div>
+    </div>
+
+    <!-- Standard Panel -->
+    <div id="standard" class="panel">
+        <div class="medium-tip" style="background: #eff6ff; border-color: #bfdbfe; color: #1e40af;">
+            <div style="font-size: 1.5rem;">ℹ️</div>
+            <div>
+                <strong>Standard Indexing</strong>
+                Use this for domains you verify ownership of via DNS/File. This submits URLs directly to the API.
+            </div>
+        </div>
+        <div class="input-group">
+            <textarea id="standard-urls" placeholder="Paste URLs from YOUR domain here..."></textarea>
+        </div>
+        <button onclick="submitStandard()" style="background: #2563eb;">
+            Submit to Indexing API
+        </button>
+        <div id="standard-result" style="margin-top: 1rem;"></div>
+    </div>
+
+    <!-- History Panel -->
+    <div id="history" class="panel">
+        <div id="history-list" class="history-list">Loading...</div>
+    </div>
+</div>
+
+<script>
+    const API_URL = '/api';
+
+    function switchTab(tabName) {
+        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+        
+        event.target.classList.add('active');
+        document.getElementById(tabName).classList.add('active');
+        
+        if(tabName === 'history') loadHistory();
+        if(tabName === 'auto') loadFeeds();
+        if(tabName === 'visits') loadVisits();
+    }
+
+    async function loadVisits() {
+        const list = document.getElementById('visits-list');
+        list.innerHTML = 'Loading...';
+        try {
+            const res = await fetch(`${API_URL}/visits`);
+            const data = await res.json();
+            
+            if (data.visits && data.visits.length > 0) {
+                list.innerHTML = data.visits.map(v => `
+                    <div style="padding: 1rem; border-bottom: 1px solid var(--border); background: #fff5f5;">
+                        <div style="color: #be123c; font-weight: bold;">🚨 Googlebot Detected!</div>
+                        <div style="font-size: 0.9rem; margin-top: 0.5rem;">
+                            <div>Time: ${new Date(v.time).toLocaleString()}</div>
+                            <div>Path: ${v.path}</div>
+                            <div style="color: #666; font-size: 0.8rem; margin-top: 0.25rem;">UA: ${v.ua}</div>
+                        </div>
+                    </div>
+                `).join('');
+            } else {
+                list.innerHTML = '<div style="padding: 2rem; text-align: center; color: var(--secondary);">No Googlebot visits yet. Waiting... 🕷️</div>';
+            }
+        } catch (e) {
+            // Check if server is running on localhost or ngrok and handle accordingly
+            list.innerHTML = '<div style="padding: 1rem; color: #ef4444;">Error: Could not fetch visits. (Is server running?)</div>';
+        }
+    }
+
+    async function loadFeeds() {
+        const list = document.getElementById('feed-list');
+        try {
+            const res = await fetch(`${API_URL}/feeds`);
+            const data = await res.json();
+            
+            if (data.feeds && data.feeds.length > 0) {
+                list.innerHTML = data.feeds.map(url => `
+                    <div style="padding: 1rem; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 0.5rem;">
+                        <span style="color: #10b981;">●</span>
+                        <div style="font-weight: 500; font-size: 0.9rem; word-break: break-all;">${url}</div>
+                    </div>
+                `).join('');
+            } else {
+                list.innerHTML = '<div style="padding: 1rem; color: var(--secondary); text-align: center;">No feeds active. Add one above!</div>';
+            }
+        } catch (e) {
+            list.innerHTML = '<div style="padding: 1rem; color: #ef4444;">Failed to load feeds.</div>';
+        }
+    }
+
+    async function addFeed() {
+        const url = document.getElementById('feed-url').value;
+        if (!url) return alert('URL required');
+        
+        const btn = document.querySelector('#auto button');
+        const resDiv = document.getElementById('auto-result');
+        
+        btn.disabled = true;
+        btn.innerText = 'Adding...';
+        
+        try {
+            const res = await fetch(`${API_URL}/feed`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ url })
+            });
+            const data = await res.json();
+            if (data.success) {
+                resDiv.innerHTML = `<div class="result-box" style="color: #0ea5e9; border-color: #bae6fd; background: #f0f9ff;">✅ Auto-Pilot Active! Monitoring ${data.feeds.length} feeds.</div>`;
+                loadFeeds(); // Refresh list
+            }
+        } catch (e) {
+            resDiv.innerText = 'Error: ' + e.message;
+        }
+        btn.disabled = false;
+        btn.innerText = 'Start Auto-Pilot';
+    }
+
+    async function boostMedium() {
+        const text = document.getElementById('medium-urls').value;
+        const urls = text.split('\n').map(u => u.trim()).filter(u => u.startsWith('http'));
+        
+        if (urls.length === 0) {
+            alert('Please paste at least one valid Medium URL');
+            return;
+        }
+
+        const btn = document.querySelector('#medium button');
+        const resultDiv = document.getElementById('medium-result');
+        
+        btn.disabled = true;
+        btn.innerHTML = '<span class="spin">⚡</span> Generating Bridge Page...';
+        resultDiv.innerHTML = '';
+
+        try {
+            const res = await fetch(`${API_URL}/medium-boost`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ urls })
+            });
+            const data = await res.json();
+            
+            if (data.success) {
+                resultDiv.innerHTML = `
+                    <div class="result-box">
+                        <div style="color: #10b981; font-weight: 700; font-size: 1.1rem; margin-bottom: 0.5rem;">
+                            ✅ Success! Bridge Page Created
+                        </div>
+                        <div style="color: var(--secondary); margin-bottom: 1rem;">
+                            Submitted to search engines. Google will crawl this page and find your Medium links.
+                        </div>
+                        <a href="${data.bridgeUrl}" target="_blank" class="result-link" style="font-weight: 600;">
+                            ${data.bridgeUrl} ↗
+                        </a>
+                    </div>
+                `;
+            } else {
+                resultDiv.innerHTML = `<div class="result-box" style="background: #fee2e2; border-color: #fecaca; color: #991b1b;">Error: ${data.error || 'Unknown error'}</div>`;
+            }
+        } catch (e) {
+            resultDiv.innerHTML = `<div class="result-box" style="background: #fee2e2; border-color: #fecaca; color: #991b1b;">Network Error: ${e.message}</div>`;
+        }
+        
+        btn.disabled = false;
+        btn.innerText = '⚡ Generate Bridge Page & Boost Rank';
+    }
+
+    async function loadHistory() {
+        const list = document.getElementById('history-list');
+        try {
+            const res = await fetch(`${API_URL}/history`);
+            const data = await res.json();
+            
+            list.innerHTML = data.map(item => `
+                <div class="history-item">
+                    <div>
+                        <div class="url-text">${item.url}</div>
+                        <div class="timestamp">${new Date(item.timestamp).toLocaleString()}</div>
+                    </div>
+                    <div>
+                        ${Object.entries(item.services).map(([svc, status]) => `
+                            <span class="status-badge ${status.status === 200 || status.status === 'simulated' ? 'status-success' : 'status-error'}">
+                                ${svc}: ${status.status}
+                            </span>
+                        `).join('')}
+                    </div>
+                </div>
+            `).join('');
+        } catch (e) {
+            list.innerText = 'Failed to load history';
+        }
+    }
+</script>
+
+</body>
+</html>
