@@ -612,11 +612,13 @@
     async function forceSubmit(url) {
         if (!confirm('Re-submit this URL to Google?')) return;
         
-        const btn = event.target;
-        const originalText = btn.innerText;
-        btn.innerText = 'Sending...';
-        btn.disabled = true;
-
+        // Find the button inside the specific status row
+        // We can't rely on event.target because sometimes it's the icon inside the button
+        // So we will just disable ALL buttons in the status list for a moment to be safe
+        // Or better, just show a global loading indicator or alert
+        
+        // Simpler: Just use alert for feedback as the button reference might be tricky with multiple rows
+        
         try {
             const res = await fetch(`${API_URL}/submit`, {
                 method: 'POST',
@@ -634,9 +636,6 @@
             }
         } catch(e) {
             alert('Error: ' + e.message);
-        } finally {
-            btn.innerText = originalText;
-            btn.disabled = false;
         }
     }
 
