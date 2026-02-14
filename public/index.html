@@ -316,9 +316,14 @@
         <div class="input-group">
             <textarea id="medium-urls" placeholder="Paste your Medium Article URLs here (one per line)..."></textarea>
         </div>
-        <button id="boost-btn" onclick="boostMedium()">
-            ⚡ Generate Bridge Page & Boost Rank
-        </button>
+        <div style="display: flex; gap: 1rem; margin-bottom: 1rem;">
+             <button id="boost-btn" onclick="boostMedium()" style="flex: 2;">
+                ⚡ Generate Bridge Page & Boost Rank
+            </button>
+            <button onclick="clearSavedUrls()" style="flex: 1; background: #cbd5e1; color: #334155;">
+                🗑️ Clear
+            </button>
+        </div>
         <div id="medium-result"></div>
     </div>
 
@@ -419,6 +424,19 @@
         if(tabName === 'auto') loadFeeds();
         if(tabName === 'visits') loadVisits();
         if(tabName === 'status') loadStatusDashboard();
+    }
+
+    // Load saved URLs on startup
+    window.addEventListener('DOMContentLoaded', () => {
+        const saved = localStorage.getItem('savedMediumUrls');
+        if (saved) {
+            document.getElementById('medium-urls').value = saved;
+        }
+    });
+
+    function clearSavedUrls() {
+        document.getElementById('medium-urls').value = '';
+        localStorage.removeItem('savedMediumUrls');
     }
 
     async function loadStatusDashboard() {
@@ -637,6 +655,9 @@
             alert('Please paste at least one valid Medium URL (starting with http)');
             return;
         }
+
+        // Save URLs for next time
+        localStorage.setItem('savedMediumUrls', text);
 
         // Use direct ID selector
         const btn = document.getElementById('boost-btn');
