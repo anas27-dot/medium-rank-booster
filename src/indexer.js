@@ -22,28 +22,50 @@ class Indexer extends EventEmitter {
         // Google Auth
         this.auth = null;
         
-        // Priority 1: Env Var (Best for Render/Cloud)
-        if (process.env.GOOGLE_KEY_JSON) {
-            console.log('✅ Google Key found in Environment Variable');
-            try {
-                const credentials = JSON.parse(process.env.GOOGLE_KEY_JSON);
-                this.auth = new google.auth.GoogleAuth({
-                    credentials,
-                    scopes: ['https://www.googleapis.com/auth/indexing'],
-                });
-            } catch (e) {
-                console.error('❌ Failed to parse GOOGLE_KEY_JSON:', e.message);
+        // Priority 1: Key Rotation (Env Vars: GOOGLE_KEY_JSON, GOOGLE_KEY_JSON_2, etc.)
+        this.googleKeys = [];
+        
+        // Check primary key
+        if (process.env.GOOGLE_KEY_JSON) this.googleKeys.push(process.env.GOOGLE_KEY_JSON);
+        
+        // Check extra keys (up to 5)
+        for (let i = 2; i <= 5; i++) {
+            if (process.env[`GOOGLE_KEY_JSON_${i}`]) {
+                this.googleKeys.push(process.env[`GOOGLE_KEY_JSON_${i}`]);
             }
-        } 
-        // Priority 2: File (Best for Local)
-        else if (fs.existsSync(this.config.googleKeyFile)) {
+        }
+
+        if (this.googleKeys.length > 0) {
+            console.log(`✅ Loaded ${this.googleKeys.length} Google Service Accounts for Rotation`);
+        } else if (fs.existsSync(this.config.googleKeyFile)) {
+            // Fallback to local file
             console.log('✅ Google Key File Found:', this.config.googleKeyFile);
-            this.auth = new google.auth.GoogleAuth({
-                keyFile: this.config.googleKeyFile,
+            try {
+                const fileContent = fs.readFileSync(this.config.googleKeyFile, 'utf8');
+                this.googleKeys.push(fileContent);
+            } catch(e) { console.error('Error reading key file'); }
+        } else {
+            console.log('❌ Google Key File NOT Found');
+        }
+    }
+
+    // Helper to get a random auth client
+    async getGoogleClient() {
+        if (this.googleKeys.length === 0) return null;
+        
+        // Pick a random key
+        const randomKeyStr = this.googleKeys[Math.floor(Math.random() * this.googleKeys.length)];
+        
+        try {
+            const credentials = JSON.parse(randomKeyStr);
+            const auth = new google.auth.GoogleAuth({
+                credentials,
                 scopes: ['https://www.googleapis.com/auth/indexing'],
             });
-        } else {
-            console.log('❌ Google Key File NOT Found:', this.config.googleKeyFile);
+            return await auth.getClient();
+        } catch (e) {
+            console.error('Auth Error with rotated key:', e.message);
+            return null;
         }
     }
 
@@ -69,11 +91,11 @@ class Indexer extends EventEmitter {
             services: {}
         };
 
-        // 1. Google Indexing API
-        if (this.auth) {
+        // 1. Google Indexing API (Rotated)
+        const googleClient = await this.getGoogleClient();
+        if (googleClient) {
             try {
-                const client = await this.auth.getClient();
-                const res = await client.request({
+                const res = await googleClient.request({
                     url: 'https://indexing.googleapis.com/v3/urlNotifications:publish',
                     method: 'POST',
                     data: { url, type: 'URL_UPDATED' }
@@ -83,7 +105,7 @@ class Indexer extends EventEmitter {
                 result.services.google = { status: 'error', error: e.message };
             }
         } else {
-            result.services.google = { status: 'skipped', reason: 'No key file' };
+            result.services.google = { status: 'skipped', reason: 'No valid key found' };
         }
 
         // 2. IndexNow (Bing, Yandex, Naver, Seznam)
