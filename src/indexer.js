@@ -127,12 +127,18 @@ class Indexer extends EventEmitter {
     // --- MEDIUM BOOSTER & YOUTUBE STRATEGY ---
     // Generates a local HTML page linking to the Medium articles and YouTube videos
     // Submits THIS local page to Google/Bing (since user owns this domain)
-    async generateBridgePage(urls) {
+    async generateBridgePage(items) {
         const bridgePath = path.join(__dirname, '../public/medium-bridge.html');
         const sitemapPath = path.join(__dirname, '../public/sitemap.xml');
         
-        const mediumUrls = urls.filter(u => u.includes('medium.com'));
-        const youtubeUrls = urls.filter(u => u.includes('youtube.com') || u.includes('youtu.be'));
+        // Normalize items: Convert string URLs to objects if needed
+        const normalizedItems = items.map(item => {
+            if (typeof item === 'string') return { url: item, title: '', snippet: '' };
+            return item;
+        });
+
+        const mediumItems = normalizedItems.filter(i => i.url.includes('medium.com'));
+        const youtubeItems = normalizedItems.filter(i => i.url.includes('youtube.com') || i.url.includes('youtu.be'));
         
         let html = `
 <!DOCTYPE html>
@@ -141,73 +147,110 @@ class Indexer extends EventEmitter {
     <meta charset="UTF-8">
     <meta name="google-site-verification" content="BdcvLEb3SyOkHS6rbBdgd3-ysy0LsbLqWt7-WcDzFjg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Featured Content - ${new Date().toLocaleDateString()}</title>
-    <meta name="description" content="A curated list of top Medium articles and YouTube videos.">
+    <title>Industry Insights & Tech News - ${new Date().toLocaleDateString()}</title>
+    <meta name="description" content="Latest updates on AI Agents, Oil & Gas Technology, and Engineering breakthroughs. curated list of top articles.">
     <style>
-        body { font-family: system-ui, sans-serif; max-width: 800px; margin: 0 auto; padding: 2rem; line-height: 1.6; background: #f9f9f9; }
-        .article-card { background: white; border: 1px solid #ddd; padding: 1.5rem; margin-bottom: 1rem; border-radius: 8px; transition: transform 0.2s; }
-        .article-card:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
-        a { text-decoration: none; color: #1a8917; font-weight: bold; font-size: 1.2rem; display: block; margin-bottom: 0.5rem; }
-        .yt-link { color: #ff0000; }
-        .meta { color: #666; font-size: 0.9rem; }
-        .tag { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 0.8rem; font-weight: bold; margin-right: 8px; }
-        .tag-medium { background: #e6f7e9; color: #1a8917; }
-        .tag-yt { background: #ffe6e6; color: #ff0000; }
+        :root { --primary: #0f172a; --accent: #2563eb; --bg: #f8fafc; --card: #ffffff; }
+        body { font-family: 'Inter', system-ui, sans-serif; max-width: 900px; margin: 0 auto; padding: 2rem; line-height: 1.7; background: var(--bg); color: #334155; }
+        h1 { color: var(--primary); font-size: 2.5rem; letter-spacing: -0.025em; margin-bottom: 0.5rem; }
+        p.subtitle { color: #64748b; font-size: 1.1rem; margin-bottom: 3rem; }
+        .article-card { background: var(--card); border: 1px solid #e2e8f0; padding: 2rem; margin-bottom: 1.5rem; border-radius: 12px; transition: all 0.2s; }
+        .article-card:hover { transform: translateY(-3px); box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1); border-color: var(--accent); }
+        h2 { margin: 0 0 0.75rem 0; font-size: 1.4rem; }
+        a.title-link { text-decoration: none; color: var(--primary); font-weight: 700; }
+        a.title-link:hover { color: var(--accent); }
+        .snippet { color: #475569; font-size: 1rem; margin-bottom: 1rem; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+        .meta { font-size: 0.875rem; color: #94a3b8; font-weight: 500; display: flex; align-items: center; gap: 0.5rem; }
+        .tag { display: inline-block; padding: 4px 10px; border-radius: 99px; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; }
+        .tag-medium { background: #dcfce7; color: #166534; }
+        .tag-yt { background: #fee2e2; color: #991b1b; }
+        .read-more { color: var(--accent); text-decoration: none; font-weight: 600; font-size: 0.9rem; }
+        .read-more:hover { text-decoration: underline; }
+        footer { margin-top: 4rem; text-align: center; color: #cbd5e1; font-size: 0.875rem; border-top: 1px solid #e2e8f0; padding-top: 2rem; }
     </style>
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "NewsMediaOrganization",
+      "name": "Tech Industry Insights",
+      "url": "${this.config.siteUrl}",
+      "logo": "https://cdn-images-1.medium.com/max/1200/1*jfdwtvU6V6g99q3G7gq7dQ.png"
+    }
+    </script>
     <script type="application/ld+json">
     {
       "@context": "https://schema.org",
       "@type": "ItemList",
       "itemListElement": [
-        ${urls.map((url, i) => `
+        ${normalizedItems.map((item, i) => `
         {
           "@type": "ListItem",
           "position": ${i + 1},
-          "url": "${url}"
+          "url": "${item.url}",
+          "name": "${item.title || 'Featured Article'}"
         }`).join(',')}
       ]
     }
     </script>
 </head>
 <body>
-    <h1>Recommended Content</h1>
-    <p>Updated: ${new Date().toISOString()}</p>
+    <header>
+        <h1>Industry Insights</h1>
+        <p class="subtitle">Curated daily updates on Technology, AI, and Engineering.</p>
+    </header>
+
     <div class="articles">
 `;
 
         // Process Medium URLs
-        mediumUrls.forEach(url => {
-            const slug = url.split('/').pop().replace(/-/g, ' ');
+        mediumItems.forEach(item => {
+            const slug = item.title || item.url.split('/').pop().replace(/-/g, ' ');
+            const snippet = item.snippet || 'Read this in-depth article on Medium to learn more about the latest developments in the industry.';
+            
             html += `
         <article class="article-card">
-            <span class="tag tag-medium">Article</span>
-            <a href="${url}" target="_blank" rel="dofollow">${slug || 'Read Article'}</a>
-            <div class="meta">Read on Medium</div>
+            <div style="margin-bottom: 0.75rem;"><span class="tag tag-medium">News</span></div>
+            <h2><a href="${item.url}" target="_blank" rel="dofollow" class="title-link">${slug}</a></h2>
+            <div class="snippet">${snippet}</div>
+            <div class="meta">
+                <span>By Medium</span> • <span>${new Date().toLocaleDateString()}</span>
+                <span style="flex-grow: 1;"></span>
+                <a href="${item.url}" target="_blank" class="read-more">Read Full Story →</a>
+            </div>
         </article>`;
         });
 
         // Process YouTube URLs
-        youtubeUrls.forEach(url => {
+        youtubeItems.forEach(item => {
             let videoId = '';
             try {
-                if (url.includes('youtu.be')) videoId = url.split('/').pop();
-                else videoId = new URL(url).searchParams.get('v');
+                if (item.url.includes('youtu.be')) videoId = item.url.split('/').pop();
+                else videoId = new URL(item.url).searchParams.get('v');
             } catch (e) {}
             
             if (videoId) {
                 const thumb = `https://img.youtube.com/vi/${videoId}/mqdefault.jpg`;
                 html += `
         <article class="article-card">
-            <span class="tag tag-yt">Video</span>
-            <a href="${url}" target="_blank" rel="dofollow" class="yt-link">Watch Video</a>
-            <img src="${thumb}" alt="Video Thumbnail" style="width: 100%; max-width: 320px; border-radius: 4px; margin-top: 10px;">
-            <div class="meta">Watch on YouTube</div>
+            <div style="margin-bottom: 0.75rem;"><span class="tag tag-yt">Video</span></div>
+            <h2><a href="${item.url}" target="_blank" rel="dofollow" class="title-link">${item.title || 'Watch Video'}</a></h2>
+            <img src="${thumb}" alt="Video Thumbnail" style="width: 100%; max-width: 320px; border-radius: 8px; margin: 1rem 0;">
+            <div class="meta">
+                <span>YouTube</span>
+                <span style="flex-grow: 1;"></span>
+                <a href="${item.url}" target="_blank" class="read-more">Watch Now →</a>
+            </div>
         </article>`;
             }
         });
 
         html += `
     </div>
+    
+    <footer>
+        <p>© ${new Date().getFullYear()} Industry Insights Aggregator. All rights reserved.</p>
+        <p>This page curates high-quality content from trusted sources for educational purposes.</p>
+    </footer>
 </body>
 </html>`;
 

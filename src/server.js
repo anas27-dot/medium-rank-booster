@@ -60,8 +60,13 @@ async function checkFeed(feedUrl) {
 
         if (recentItems.length > 0) {
             console.log(`Found ${recentItems.length} new articles! Boosting...`);
-            const urls = recentItems.map(item => item.link);
-            await indexer.generateBridgePage(urls);
+            // Pass full item details to generateBridgePage
+            const articles = recentItems.map(item => ({
+                url: item.link,
+                title: item.title,
+                snippet: item.contentSnippet || item.content || ''
+            }));
+            await indexer.generateBridgePage(articles);
         } else {
             console.log('No new articles found in last 24h.');
         }
@@ -182,16 +187,19 @@ app.post('/api/submit', async (req, res) => {
 
 // API: Submit Medium Links (Bridge Page Strategy)
 app.post('/api/medium-boost', async (req, res) => {
-    const { urls } = req.body; // Array of Medium URLs
+    const { urls } = req.body; // Array of Medium URLs or Objects
     if (!urls || !Array.isArray(urls)) return res.status(400).json({ error: 'URLs array required' });
     
     try {
+        // Convert plain URLs to objects if needed
+        const articles = urls.map(u => typeof u === 'string' ? { url: u, title: '', snippet: '' } : u);
+
         // Generate the bridge page and submit IT instead
-        const result = await indexer.generateBridgePage(urls);
+        const result = await indexer.generateBridgePage(articles);
         res.json({
             success: true,
             bridgeUrl: result.url, // The generated bridge page URL
-            message: `Created bridge page with ${urls.length} Medium links and submitted to search engines.`
+            message: `Created bridge page with ${articles.length} Medium links and submitted to search engines.`
         });
     } catch (e) {
         res.status(500).json({ error: e.message });
