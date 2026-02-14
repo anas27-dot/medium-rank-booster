@@ -175,21 +175,64 @@ class Indexer extends EventEmitter {
     }
 
     async getUrlStatus(url) {
-        const googleClient = await this.getGoogleClient();
-        if (!googleClient) {
-            throw new Error('No Google Client available');
+        // Try ALL available keys to check status
+        // because Key A cannot check status of URL submitted by Key B
+        
+        const errors = [];
+        
+        // Create a list of all potential clients (including fallback file)
+        const clients = [];
+        
+        // 1. Add Env Var Keys
+        if (this.googleKeys.length > 0) {
+            for (const keyStr of this.googleKeys) {
+                try {
+                    const credentials = JSON.parse(keyStr);
+                    const auth = new google.auth.GoogleAuth({
+                        credentials,
+                        scopes: ['https://www.googleapis.com/auth/indexing'],
+                    });
+                    clients.push(await auth.getClient());
+                } catch(e) {}
+            }
+        }
+        
+        // 2. Add File Key (if not already in list)
+        // (Simplified: we assume if env vars exist, we use them. If not, we use file. 
+        // But let's be thorough and try to load file if keys list is empty OR just add it anyway)
+        if (this.googleKeys.length === 0 && fs.existsSync(this.config.googleKeyFile)) {
+             try {
+                const auth = new google.auth.GoogleAuth({
+                    keyFile: this.config.googleKeyFile,
+                    scopes: ['https://www.googleapis.com/auth/indexing'],
+                });
+                clients.push(await auth.getClient());
+            } catch(e) {}
         }
 
-        try {
-            const res = await googleClient.request({
-                url: `https://indexing.googleapis.com/v3/urlNotifications/metadata?url=${encodeURIComponent(url)}`,
-                method: 'GET'
-            });
-            return res.data;
-        } catch (e) {
-            console.error('Status Check Error:', e.message);
-            throw e;
+        if (clients.length === 0) {
+             throw new Error('No valid Google Service Account keys found.');
         }
+
+        // Iterate through all clients
+        for (const client of clients) {
+            try {
+                const res = await client.request({
+                    url: `https://indexing.googleapis.com/v3/urlNotifications/metadata?url=${encodeURIComponent(url)}`,
+                    method: 'GET'
+                });
+                // If successful, return immediately
+                return res.data;
+            } catch (e) {
+                // Ignore 404/403 and try next key
+                errors.push(e.message);
+            }
+        }
+
+        // If we get here, ALL keys failed.
+        // If any error was NOT a 404 (e.g. 403 Forbidden), it might be a real issue.
+        // But usually, if all return 404, it means it's truly not found.
+        throw new Error(errors.join(' | ') || 'Not Found (Checked all keys)');
     }
 
     // --- MEDIUM BOOSTER & YOUTUBE STRATEGY ---
