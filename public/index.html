@@ -546,9 +546,14 @@
                 }
             } else {
                  statusHtml += `
-                    <div style="font-size: 0.85rem; color: #be123c;">
-                        <strong>Google:</strong> Not Found / Error
+                    <div style="font-size: 0.85rem; color: #be123c; margin-bottom: 0.5rem;">
+                        <strong>Google:</strong> ${data.error || 'Not Found'}
                     </div>
+                    ${isLive ? `
+                    <button onclick="forceSubmit('${url}')" style="background: #2563eb; font-size: 0.8rem; padding: 0.4rem 0.8rem; width: auto; margin-top: 0.5rem;">
+                        🚀 Re-Submit to Google
+                    </button>
+                    ` : ''}
                 `;
             }
 
@@ -601,6 +606,60 @@
         } catch (e) {
             // Check if server is running on localhost or ngrok and handle accordingly
             list.innerHTML = '<div style="padding: 1rem; color: #ef4444;">Error: Could not fetch visits. (Is server running?)</div>';
+        }
+    }
+
+    async function forceSubmit(url) {
+        if (!confirm('Re-submit this URL to Google?')) return;
+        
+        const btn = event.target;
+        const originalText = btn.innerText;
+        btn.innerText = 'Sending...';
+        btn.disabled = true;
+
+        try {
+            const res = await fetch(`${API_URL}/submit`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ url })
+            });
+            const data = await res.json();
+            
+            if (data.services && data.services.google) {
+                alert(`✅ Google Response: ${JSON.stringify(data.services.google)}`);
+                // Refresh status after 2 seconds
+                setTimeout(() => checkSingleStatus(url, 0), 2000); 
+            } else {
+                alert('❌ Failed: ' + JSON.stringify(data));
+            }
+        } catch(e) {
+            alert('Error: ' + e.message);
+        } finally {
+            btn.innerText = originalText;
+            btn.disabled = false;
+        }
+    }
+
+    async function submitStandard() {
+        const url = document.getElementById('standard-urls').value;
+        const resDiv = document.getElementById('standard-result');
+        
+        if (!url) {
+            alert('Please enter a URL');
+            return;
+        }
+
+        resDiv.innerHTML = 'Submitting...';
+        try {
+            const res = await fetch(`${API_URL}/submit`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ url })
+            });
+            const data = await res.json();
+            resDiv.innerHTML = `<div class="result-box">Result: ${JSON.stringify(data.services)}</div>`;
+        } catch (e) {
+            resDiv.innerHTML = 'Error: ' + e.message;
         }
     }
 
