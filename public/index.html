@@ -519,7 +519,10 @@
             // Availability Warning
             if (!isLive) {
                 statusHtml += `<div style="color: #ea580c; font-weight: bold; margin-bottom: 0.25rem;">⚠️ File Missing (404)</div>
-                               <div style="font-size: 0.8rem; margin-bottom: 0.5rem; color: #c2410c;">Server restarted. Please <strong>Generate Bridge Page</strong> again.</div>`;
+                               <div style="font-size: 0.8rem; margin-bottom: 0.5rem; color: #c2410c;">Server restarted. Please regenerate the page.</div>
+                               <button onclick="regenerateBridge()" style="background: #f97316; font-size: 0.8rem; padding: 0.4rem 0.8rem; width: auto;">
+                                   🔄 Regenerate Now
+                               </button>`;
                 row.style.background = '#fff7ed'; // Orange tint
                 row.style.borderColor = '#fdba74';
             } else {
@@ -562,6 +565,16 @@
 
     async function checkUrlStatus() {
         // Deprecated - kept for reference if needed
+    }
+
+    function regenerateBridge() {
+        switchTab('medium');
+        const urls = document.getElementById('medium-urls').value;
+        if (urls.trim().length > 0) {
+            boostMedium();
+        } else {
+            alert('Please paste your Medium URLs again.');
+        }
     }
 
     async function loadVisits() {
