@@ -304,24 +304,21 @@
 
     <!-- Medium Panel -->
     <div id="medium" class="panel active">
-        <!-- ... -->
-    </div>
-
-    <!-- Bot Visits Panel -->
-    <div id="visits" class="panel">
-        <div class="medium-tip" style="background: #fdf2f8; border-color: #fca5a5; color: #be123c;">
-            <div style="font-size: 1.5rem;">🚨</div>
+        <div class="medium-tip">
+            <div style="font-size: 1.5rem;">�</div>
             <div>
-                <strong>Googlebot Watch</strong>
-                Real-time log of when Googlebot crawls your site.
+                <strong>How this works</strong>
+                Since you don't own medium.com, you can't submit individual article URLs directly to Google Indexing API. 
+                This tool creates a high-authority "Bridge Page" on <em>your</em> domain listing all your articles, then submits that Bridge Page to Google/Bing.
             </div>
         </div>
-        <button onclick="loadVisits()" style="margin-bottom: 1rem; background: #be123c;">Refresh Logs</button>
-        <div id="visits-list">Loading...</div>
-    </div>
-
-    <!-- Auto-Pilot Panel -->
-        <!-- ... existing medium content ... -->
+        <div class="input-group">
+            <textarea id="medium-urls" placeholder="Paste your Medium Article URLs here (one per line)..."></textarea>
+        </div>
+        <button onclick="boostMedium()">
+            ⚡ Generate Bridge Page & Boost Rank
+        </button>
+        <div id="medium-result"></div>
     </div>
 
     <!-- Auto-Pilot Panel -->
@@ -350,22 +347,17 @@
         </div>
     </div>
 
-    <!-- Standard Panel -->
-        <div class="medium-tip">
-            <div style="font-size: 1.5rem;">🚀</div>
+    <!-- Bot Visits Panel -->
+    <div id="visits" class="panel">
+        <div class="medium-tip" style="background: #fdf2f8; border-color: #fca5a5; color: #be123c;">
+            <div style="font-size: 1.5rem;">�</div>
             <div>
-                <strong>How this works</strong>
-                Since you don't own medium.com, you can't submit individual article URLs directly to Google Indexing API. 
-                This tool creates a high-authority "Bridge Page" on <em>your</em> domain listing all your articles, then submits that Bridge Page to Google/Bing.
+                <strong>Googlebot Watch</strong>
+                Real-time log of when Googlebot crawls your site.
             </div>
         </div>
-        <div class="input-group">
-            <textarea id="medium-urls" placeholder="Paste your Medium Article URLs here (one per line)..."></textarea>
-        </div>
-        <button onclick="boostMedium()">
-            ⚡ Generate Bridge Page & Boost Rank
-        </button>
-        <div id="medium-result"></div>
+        <button onclick="loadVisits()" style="margin-bottom: 1rem; background: #be123c;">Refresh Logs</button>
+        <div id="visits-list">Loading...</div>
     </div>
 
     <!-- Standard Panel -->
