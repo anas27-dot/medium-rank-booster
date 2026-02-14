@@ -247,7 +247,50 @@ class Indexer extends EventEmitter {
     <header>
         <h1>Industry Insights</h1>
         <p class="subtitle">Curated daily updates on Technology, AI, and Engineering.</p>
+        
+        <!-- Social Share Section -->
+        <div class="share-container" style="background: #fff; padding: 1.5rem; border-radius: 12px; border: 1px solid #e2e8f0; margin-bottom: 2rem; text-align: center;">
+            <h3 style="margin-top: 0; font-size: 1.1rem; color: #475569;">🚀 Share this Digest</h3>
+            <div style="display: flex; gap: 0.75rem; justify-content: center; flex-wrap: wrap; margin-top: 1rem;">
+                <button onclick="copyLink()" class="share-btn copy-btn" style="background: #334155;">📋 Copy Link</button>
+                <a href="https://www.reddit.com/submit?url=${encodeURIComponent(this.config.siteUrl + '/medium-bridge.html')}&title=Check%20out%20these%20awesome%20articles!" target="_blank" class="share-btn" style="background: #FF4500;">Reddit</a>
+                <a href="https://twitter.com/intent/tweet?text=Check%20out%20this%20curated%20list%20of%20tech%20articles!&url=${encodeURIComponent(this.config.siteUrl + '/medium-bridge.html')}" target="_blank" class="share-btn" style="background: #000;">X (Twitter)</a>
+                <a href="https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(this.config.siteUrl + '/medium-bridge.html')}" target="_blank" class="share-btn" style="background: #0077b5;">LinkedIn</a>
+                <a href="https://api.whatsapp.com/send?text=Check%20out%20this%20tech%20digest:%20${encodeURIComponent(this.config.siteUrl + '/medium-bridge.html')}" target="_blank" class="share-btn" style="background: #25D366;">WhatsApp</a>
+            </div>
+            <p id="copy-msg" style="font-size: 0.8rem; color: #166534; margin-top: 0.5rem; opacity: 0; transition: opacity 0.3s;">Link copied to clipboard!</p>
+        </div>
     </header>
+
+    <script>
+        function copyLink() {
+            const url = window.location.href;
+            navigator.clipboard.writeText(url).then(() => {
+                const msg = document.getElementById('copy-msg');
+                msg.style.opacity = '1';
+                setTimeout(() => msg.style.opacity = '0', 2000);
+            });
+        }
+    </script>
+
+    <style>
+        .share-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0.6rem 1.2rem;
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            border: none;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        .share-btn:hover { transform: translateY(-2px); opacity: 0.9; }
+        .copy-btn { cursor: pointer; }
+    </style>
 
     <div class="articles">
 `;
