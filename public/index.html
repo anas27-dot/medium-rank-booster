@@ -476,33 +476,63 @@
         const statusDiv = row.querySelector('.status-detail');
         const btn = row.querySelector('button');
 
-        statusDiv.innerHTML = '<span class="spin">⏳</span> Asking Google...';
+        statusDiv.innerHTML = '<span class="spin">⏳</span> Checking Health & Google...';
         btn.disabled = true;
         btn.style.opacity = '0.7';
 
         try {
+            // 1. Check if the page actually exists (Live Check)
+            // Use 'no-cache' to avoid getting a cached 200 OK from browser if file is actually gone
+            let isLive = false;
+            try {
+                const liveCheck = await fetch(url, { method: 'HEAD', cache: 'no-cache' });
+                isLive = liveCheck.ok;
+            } catch (e) {
+                // If fetch fails (CORS or network), assume live or unknown for now, but handle gracefully
+                console.log('Live check failed', e);
+            }
+
+            // 2. Check Google Indexing API
             const res = await fetch(`${API_URL}/status?url=${encodeURIComponent(url)}`);
             const data = await res.json();
 
+            let statusHtml = '';
+            
+            // Availability Warning
+            if (!isLive) {
+                statusHtml += `<div style="color: #ea580c; font-weight: bold; margin-bottom: 0.25rem;">⚠️ File Missing (404)</div>
+                               <div style="font-size: 0.8rem; margin-bottom: 0.5rem; color: #c2410c;">Server restarted. Please <strong>Generate Bridge Page</strong> again.</div>`;
+                row.style.background = '#fff7ed'; // Orange tint
+                row.style.borderColor = '#fdba74';
+            } else {
+                statusHtml += `<div style="color: #166534; font-weight: bold; margin-bottom: 0.25rem;">✅ Live & Accessible</div>`;
+            }
+
+            // Google API Result
             if (data.success) {
                 const meta = data.data;
                 const time = meta.latestUpdate ? new Date(meta.latestUpdate.notifyTime).toLocaleString() : 'Never';
                 const type = meta.latestUpdate ? meta.latestUpdate.type : 'N/A';
                 
-                statusDiv.innerHTML = `
-                    <span style="color: #166534; font-weight: 600;">✅ Indexed / Received</span> • 
-                    Update: ${time} • Type: ${type}
+                statusHtml += `
+                    <div style="font-size: 0.85rem; color: var(--secondary);">
+                        <strong>Google:</strong> Received • ${time} • ${type}
+                    </div>
                 `;
-                row.style.borderColor = '#bbf7d0';
-                row.style.background = '#f0fdf4';
+                if(isLive) {
+                    row.style.borderColor = '#bbf7d0';
+                    row.style.background = '#f0fdf4';
+                }
             } else {
-                 statusDiv.innerHTML = `
-                    <span style="color: #be123c; font-weight: 600;">❌ Not Found</span> • 
-                    ${data.error || 'Google has no record yet'}
+                 statusHtml += `
+                    <div style="font-size: 0.85rem; color: #be123c;">
+                        <strong>Google:</strong> Not Found / Error
+                    </div>
                 `;
-                row.style.borderColor = '#fecaca';
-                row.style.background = '#fef2f2';
             }
+
+            statusDiv.innerHTML = statusHtml;
+
         } catch (e) {
             statusDiv.innerText = 'Error checking status';
         } finally {
