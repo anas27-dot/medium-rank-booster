@@ -194,7 +194,7 @@ class Indexer extends EventEmitter {
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="google-site-verification" content="BdcvLEb3SyOkHS6rbBdgd3-ysy0LsbLqWt7-WcDzFjg" />
+    <meta name="google-site-verification" content="K_daR96GzDQ7DR0nNPNKWj0fA8b7KRaNPUlCbrAxXc0" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Industry Insights & Tech News - ${new Date().toLocaleDateString()}</title>
     <meta name="description" content="Latest updates on AI Agents, Oil & Gas Technology, and Engineering breakthroughs. curated list of top articles.">
