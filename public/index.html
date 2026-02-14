@@ -484,28 +484,42 @@
     }
 
     async function boostMedium() {
+        console.log('Boost button clicked');
         const text = document.getElementById('medium-urls').value;
+        if (!text) {
+            alert('Please enter at least one URL');
+            return;
+        }
+
         const urls = text.split('\n').map(u => u.trim()).filter(u => u.startsWith('http'));
+        console.log('URLs to boost:', urls);
         
         if (urls.length === 0) {
-            alert('Please paste at least one valid Medium URL');
+            alert('Please paste at least one valid Medium URL (starting with http)');
             return;
         }
 
         const btn = document.querySelector('#medium button');
         const resultDiv = document.getElementById('medium-result');
         
+        // Save original text
+        const originalBtnText = btn.innerText;
+
         btn.disabled = true;
         btn.innerHTML = '<span class="spin">⚡</span> Generating Bridge Page...';
         resultDiv.innerHTML = '';
 
         try {
-            const res = await fetch(`${API_URL}/medium-boost`, {
+            console.log('Sending request to /api/medium-boost');
+            const res = await fetch('/api/medium-boost', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ urls })
             });
+            
+            console.log('Response status:', res.status);
             const data = await res.json();
+            console.log('Response data:', data);
             
             if (data.success) {
                 resultDiv.innerHTML = `
@@ -525,11 +539,12 @@
                 resultDiv.innerHTML = `<div class="result-box" style="background: #fee2e2; border-color: #fecaca; color: #991b1b;">Error: ${data.error || 'Unknown error'}</div>`;
             }
         } catch (e) {
+            console.error('Fetch error:', e);
             resultDiv.innerHTML = `<div class="result-box" style="background: #fee2e2; border-color: #fecaca; color: #991b1b;">Network Error: ${e.message}</div>`;
+        } finally {
+            btn.disabled = false;
+            btn.innerHTML = originalBtnText;
         }
-        
-        btn.disabled = false;
-        btn.innerText = '⚡ Generate Bridge Page & Boost Rank';
     }
 
     async function loadHistory() {
