@@ -36,6 +36,18 @@ if (fs.existsSync(FEEDS_FILE)) {
     }
 }
 
+// ALSO Load from Environment Variable (Permanent Storage for Render)
+if (process.env.MONITORED_FEEDS) {
+    const envFeeds = process.env.MONITORED_FEEDS.split(',').map(s => s.trim()).filter(s => s);
+    // Merge unique feeds
+    envFeeds.forEach(feed => {
+        if (!monitoredFeeds.includes(feed)) {
+            monitoredFeeds.push(feed);
+        }
+    });
+    console.log('✅ Loaded Feeds from Env:', monitoredFeeds);
+}
+
 // Save feeds
 function saveFeeds() {
     fs.ensureDirSync(path.dirname(FEEDS_FILE));
