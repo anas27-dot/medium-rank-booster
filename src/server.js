@@ -92,7 +92,14 @@ job.start();
 app.use(cors());
 app.use(bodyParser.json());
 app.use(cookieParser());
-app.use(express.static(path.join(__dirname, '../public')));
+
+// Serve Login Page explicitly at /login
+app.get('/login', (req, res) => {
+    res.sendFile(path.join(__dirname, '../public/login.html'));
+});
+
+// Serve Public Assets (CSS, JS, Images) - but NOT index.html directly
+app.use(express.static(path.join(__dirname, '../public'), { index: false }));
 
 // --- AUTH MIDDLEWARE ---
 function authenticateToken(req, res, next) {
@@ -212,7 +219,7 @@ app.get('/api/history', (req, res) => {
 });
 
 // --- MAIN ROUTES ---
-// Serve login page for root
+// Root route - Protected Dashboard
 app.get('/', (req, res) => {
     const token = req.cookies.token;
     if (token) {
@@ -220,15 +227,14 @@ app.get('/', (req, res) => {
             jwt.verify(token, JWT_SECRET);
             res.sendFile(path.join(__dirname, '../public/index.html'));
         } catch (err) {
-            res.clearCookie('token');
-            res.sendFile(path.join(__dirname, '../public/login.html'));
+            res.redirect('/login');
         }
     } else {
-        res.sendFile(path.join(__dirname, '../public/login.html'));
+        res.redirect('/login');
     }
 });
 
-// Serve dashboard if authenticated
+// Explicit Dashboard route
 app.get('/dashboard', (req, res) => {
     const token = req.cookies.token;
     if (token) {
@@ -236,10 +242,10 @@ app.get('/dashboard', (req, res) => {
             jwt.verify(token, JWT_SECRET);
             res.sendFile(path.join(__dirname, '../public/index.html'));
         } catch (err) {
-            res.redirect('/');
+            res.redirect('/login');
         }
     } else {
-        res.redirect('/');
+        res.redirect('/login');
     }
 });
 
